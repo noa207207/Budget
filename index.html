@@ -545,7 +545,7 @@
 </div>
 
 <!-- חלון הגדרות -->
-<div class="modal-overlay" id="settings-modal">
+<div class="modal-overlay" id="settings-modal" onclick="if(event.target===this)closeSettings()">
   <div class="modal">
     <h3>הגדרות</h3>
     <input type="text" id="edit-name1" placeholder="השם שלך">
@@ -572,7 +572,7 @@
 </div>
 
 <!-- חלון מעשרות -->
-<div class="modal-overlay maaser-modal" id="maaser-modal">
+<div class="modal-overlay maaser-modal" id="maaser-modal" onclick="if(event.target===this)closeMaaser()">
   <div class="modal">
     <h3>מעשרות</h3>
 
