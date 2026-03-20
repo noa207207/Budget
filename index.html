@@ -477,6 +477,7 @@
       <button class="btn-primary" onclick="saveSettings()">שמור</button>
     </div>
     <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-secondary" onclick="refreshApp()">רענן גרסה</button>
       <button class="btn-danger" onclick="leaveRoom()">עזוב חדר</button>
     </div>
   </div>
@@ -698,6 +699,16 @@
 
     await update(ref(db, 'rooms/' + roomCode), { name1: n1, name2: n2, budget: b });
     window.closeSettings();
+  };
+
+  window.refreshApp = async function() {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) await reg.unregister();
+    }
+    const keys = await caches.keys();
+    for (const key of keys) await caches.delete(key);
+    window.location.reload(true);
   };
 
   window.leaveRoom = function() {
