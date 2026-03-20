@@ -368,6 +368,76 @@
       margin-top: 4px;
     }
 
+    .maaser-btn {
+      position: absolute;
+      top: 20px;
+      right: 16px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 18px;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .maaser-modal .modal {
+      max-width: 400px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .maaser-summary {
+      background: linear-gradient(135deg, #FF9F43, #FECA57);
+      border-radius: 12px;
+      padding: 16px;
+      color: white;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .maaser-summary .maaser-label { font-size: 0.75rem; opacity: 0.9; font-weight: 600; }
+    .maaser-summary .maaser-amount { font-size: 1.6rem; font-weight: 700; margin: 4px 0; }
+    .maaser-summary .maaser-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      font-size: 0.8rem;
+    }
+    .maaser-summary .maaser-row .maaser-col .maaser-val { font-weight: 700; font-size: 0.95rem; }
+
+    .maaser-list { list-style: none; max-height: 200px; overflow-y: auto; }
+    .maaser-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F0F2F5;
+      font-size: 0.85rem;
+    }
+    .maaser-item:last-child { border-bottom: none; }
+    .maaser-item .maaser-dot {
+      width: 8px; height: 8px; border-radius: 50%; margin-left: 10px; flex-shrink: 0;
+    }
+    .maaser-item .maaser-dot.p1 { background: var(--primary); }
+    .maaser-item .maaser-dot.p2 { background: #FF6B9D; }
+    .maaser-item .mi-info { flex: 1; min-width: 0; }
+    .maaser-item .mi-desc { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .maaser-item .mi-meta { font-size: 0.7rem; color: var(--text-light); margin-top: 1px; }
+    .maaser-item .mi-amount { font-weight: 700; color: var(--success); margin-right: 8px; white-space: nowrap; }
+    .maaser-item .mi-del {
+      background: none; border: none; padding: 6px; cursor: pointer;
+      color: #CCC; font-size: 1rem; border-radius: 6px; margin-right: 2px;
+    }
+    .maaser-item .mi-del:hover { color: var(--danger); }
+
     @media (max-width: 380px) {
       .budget-card .amount { font-size: 1.8rem; }
     }
@@ -416,6 +486,7 @@
   <header>
     <h1 id="header-title">התקציב שלנו</h1>
     <p class="sync-badge">מסונכרן בזמן אמת<span class="status-dot"></span> חדר: <span id="header-code" style="direction:ltr; display:inline-block;"></span></p>
+    <button class="maaser-btn" onclick="openMaaser()">מעשרות ✦</button>
     <button class="settings-btn" onclick="openSettings()" aria-label="הגדרות">⚙</button>
   </header>
 
@@ -479,6 +550,51 @@
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn-secondary" onclick="refreshApp()">רענן גרסה</button>
       <button class="btn-danger" onclick="leaveRoom()">עזוב חדר</button>
+    </div>
+  </div>
+</div>
+
+<!-- חלון מעשרות -->
+<div class="modal-overlay maaser-modal" id="maaser-modal">
+  <div class="modal">
+    <h3>מעשרות</h3>
+
+    <div class="maaser-summary" id="maaser-summary">
+      <div class="maaser-label">נשאר לתת</div>
+      <div class="maaser-amount" id="maaser-remaining">₪0</div>
+      <div class="maaser-row">
+        <div class="maaser-col">
+          <div class="maaser-label">סה״כ מעשר</div>
+          <div class="maaser-val" id="maaser-total">₪0</div>
+        </div>
+        <div class="maaser-col">
+          <div class="maaser-label">ניתן</div>
+          <div class="maaser-val" id="maaser-given">₪0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <input type="number" id="maaser-budget-input" placeholder="סכום מעשר חודשי" inputmode="decimal" min="0">
+      <button class="btn-set" onclick="saveMaaserBudget()">קבע</button>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div class="tab-bar" id="maaser-person-tabs"></div>
+      <input type="text" id="maaser-desc" placeholder="למי/למה נתתם?" autocomplete="off">
+      <div class="form-row" style="margin-top:8px;">
+        <input type="number" id="maaser-amount" placeholder="סכום" inputmode="decimal" min="0" step="0.01">
+        <button class="btn-set" onclick="addMaaser()" style="background:#FF9F43;">הוסף</button>
+      </div>
+    </div>
+
+    <ul class="maaser-list" id="maaser-list" style="margin-top:12px;"></ul>
+    <div class="empty-state" id="maaser-empty" style="padding:16px;">
+      <div>אין תרומות עדיין</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="closeMaaser()" style="width:100%;">סגור</button>
     </div>
   </div>
 </div>
@@ -547,6 +663,7 @@
         return;
       }
       renderApp();
+      if (document.getElementById('maaser-modal').classList.contains('visible')) renderMaaser();
     });
   }
 
@@ -699,6 +816,96 @@
 
     await update(ref(db, 'rooms/' + roomCode), { name1: n1, name2: n2, budget: b });
     window.closeSettings();
+  };
+
+  // --- Maasrot ---
+  let maaserPerson = 0;
+
+  function renderMaaser() {
+    if (!roomData) return;
+    const maaserBudget = roomData.maaserBudget || 0;
+    const entries = roomData.maaser ? Object.entries(roomData.maaser).map(([k, v]) => ({ id: k, ...v })) : [];
+    const given = entries.reduce((sum, e) => sum + e.amount, 0);
+    const remaining = maaserBudget - given;
+
+    document.getElementById('maaser-remaining').textContent = fmt(remaining);
+    document.getElementById('maaser-total').textContent = fmt(maaserBudget);
+    document.getElementById('maaser-given').textContent = fmt(given);
+    document.getElementById('maaser-budget-input').value = maaserBudget || '';
+
+    const tabs = document.getElementById('maaser-person-tabs');
+    tabs.innerHTML = [roomData.name1, roomData.name2].map((name, i) =>
+      `<button class="tab${maaserPerson === i ? ' active' : ''}" data-maaser-person="${i}">${escHtml(name)}</button>`
+    ).join('');
+
+    const list = document.getElementById('maaser-list');
+    const empty = document.getElementById('maaser-empty');
+
+    if (entries.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      const sorted = [...entries].sort((a, b) => b.ts - a.ts);
+      list.innerHTML = sorted.map(e => {
+        const pName = e.person === 0 ? roomData.name1 : roomData.name2;
+        const dotClass = e.person === 0 ? 'p1' : 'p2';
+        const date = new Date(e.ts).toLocaleDateString('he-IL', { month: 'short', day: 'numeric' });
+        return `<li class="maaser-item">
+          <div class="maaser-dot ${dotClass}"></div>
+          <div class="mi-info">
+            <div class="mi-desc">${escHtml(e.desc)}</div>
+            <div class="mi-meta">${escHtml(pName)} · ${date}</div>
+          </div>
+          <div class="mi-amount">${fmt(e.amount)}</div>
+          <button class="mi-del" data-maaser-id="${e.id}">×</button>
+        </li>`;
+      }).join('');
+    }
+  }
+
+  document.getElementById('maaser-person-tabs').addEventListener('click', (e) => {
+    if (e.target.dataset.maaserPerson !== undefined) {
+      maaserPerson = parseInt(e.target.dataset.maaserPerson);
+      renderMaaser();
+    }
+  });
+
+  document.getElementById('maaser-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mi-del');
+    if (btn && confirm('למחוק את התרומה הזו?')) {
+      remove(ref(db, `rooms/${roomCode}/maaser/${btn.dataset.maaserId}`));
+    }
+  });
+
+  window.openMaaser = function() {
+    renderMaaser();
+    document.getElementById('maaser-modal').classList.add('visible');
+  };
+
+  window.closeMaaser = function() {
+    document.getElementById('maaser-modal').classList.remove('visible');
+  };
+
+  window.saveMaaserBudget = async function() {
+    const val = parseFloat(document.getElementById('maaser-budget-input').value);
+    if (!val || val <= 0) return alert('נא להזין סכום תקין');
+    await update(ref(db, 'rooms/' + roomCode), { maaserBudget: val });
+  };
+
+  window.addMaaser = async function() {
+    const desc = document.getElementById('maaser-desc').value.trim();
+    const amount = parseFloat(document.getElementById('maaser-amount').value);
+    if (!desc) return alert('נא להוסיף תיאור');
+    if (!amount || amount <= 0) return alert('נא להזין סכום תקין');
+    await push(ref(db, `rooms/${roomCode}/maaser`), {
+      person: maaserPerson,
+      desc,
+      amount,
+      ts: Date.now()
+    });
+    document.getElementById('maaser-desc').value = '';
+    document.getElementById('maaser-amount').value = '';
   };
 
   window.refreshApp = async function() {
