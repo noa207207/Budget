@@ -481,6 +481,16 @@
   </div>
 </div>
 
+<!-- מסך בחירת זהות -->
+<div id="pick-screen" class="auth-screen" style="display:none;">
+  <div class="card">
+    <h2>מי את/ה?</h2>
+    <p>בחרו את השם שלכם</p>
+    <button class="btn-primary" id="pick-p0" onclick="pickPerson(0)" style="margin-bottom:10px;"></button>
+    <button class="btn-primary" id="pick-p1" onclick="pickPerson(1)" style="background:#FF6B9D;"></button>
+  </div>
+</div>
+
 <!-- אפליקציה ראשית -->
 <div id="main-app" style="display:none;">
   <header>
@@ -509,7 +519,9 @@
   <div class="section">
     <div class="section-title">הוסף הוצאה</div>
     <div class="card">
-      <div class="tab-bar" id="person-tabs"></div>
+      <div id="my-person-badge" style="text-align:center; margin-bottom:12px; font-size:0.85rem; color:var(--text-light);">
+        מוסיף בתור: <strong id="my-person-name" style="color:var(--primary);"></strong>
+      </div>
       <input type="text" id="exp-desc" placeholder="על מה הוצאת?" autocomplete="off">
       <div class="form-row" style="margin-top:10px;">
         <input type="number" id="exp-amount" placeholder="סכום" inputmode="decimal" min="0" step="0.01">
@@ -580,7 +592,9 @@
     </div>
 
     <div style="margin-top:14px;">
-      <div class="tab-bar" id="maaser-person-tabs"></div>
+      <div id="maaser-person-badge" style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--text-light);">
+        מוסיף בתור: <strong id="maaser-person-name" style="color:#FF9F43;"></strong>
+      </div>
       <input type="text" id="maaser-desc" placeholder="למי/למה נתתם?" autocomplete="off">
       <div class="form-row" style="margin-top:8px;">
         <input type="number" id="maaser-amount" placeholder="סכום" inputmode="decimal" min="0" step="0.01">
@@ -619,7 +633,8 @@
   const db = getDatabase(app);
 
   let roomCode = localStorage.getItem('noa_room_code');
-  let activePerson = 0;
+  let myPerson = localStorage.getItem('noa_my_person');
+  let activePerson = myPerson !== null ? parseInt(myPerson) : 0;
   let roomData = null;
   let unsubscribe = null;
 
@@ -645,7 +660,7 @@
   }
 
   function showScreen(id) {
-    ['auth-screen', 'code-screen', 'main-app'].forEach(s => {
+    ['auth-screen', 'code-screen', 'pick-screen', 'main-app'].forEach(s => {
       document.getElementById(s).style.display = s === id ? (s === 'main-app' ? 'block' : 'flex') : 'none';
     });
   }
@@ -689,10 +704,8 @@
     fill.style.width = pct + '%';
     fill.className = 'fill' + (pct < 20 ? ' danger' : pct < 50 ? ' warning' : '');
 
-    const tabBar = document.getElementById('person-tabs');
-    tabBar.innerHTML = [roomData.name1, roomData.name2].map((name, i) =>
-      `<button class="tab${activePerson === i ? ' active' : ''}" data-person="${i}">${escHtml(name)}</button>`
-    ).join('');
+    const myName = activePerson === 0 ? roomData.name1 : roomData.name2;
+    document.getElementById('my-person-name').textContent = myName;
 
     const list = document.getElementById('expense-list');
     const empty = document.getElementById('empty-state');
@@ -720,13 +733,6 @@
     }
   }
 
-  document.getElementById('person-tabs').addEventListener('click', (e) => {
-    if (e.target.dataset.person !== undefined) {
-      activePerson = parseInt(e.target.dataset.person);
-      renderApp();
-    }
-  });
-
   document.getElementById('expense-list').addEventListener('click', (e) => {
     const btn = e.target.closest('.expense-delete');
     if (btn && confirm('למחוק את ההוצאה הזו?')) {
@@ -750,7 +756,10 @@
     });
 
     roomCode = code;
+    activePerson = 0;
+    myPerson = 0;
     localStorage.setItem('noa_room_code', code);
+    localStorage.setItem('noa_my_person', '0');
     document.getElementById('show-code').textContent = code;
     showScreen('code-screen');
   };
@@ -767,9 +776,19 @@
       }
       roomCode = code;
       localStorage.setItem('noa_room_code', code);
-      listenToRoom(code);
-      showScreen('main-app');
+      const data = snapshot.val();
+      document.getElementById('pick-p0').textContent = data.name1;
+      document.getElementById('pick-p1').textContent = data.name2;
+      showScreen('pick-screen');
     }, { onlyOnce: true });
+  };
+
+  window.pickPerson = function(p) {
+    activePerson = p;
+    myPerson = p;
+    localStorage.setItem('noa_my_person', String(p));
+    listenToRoom(roomCode);
+    showScreen('main-app');
   };
 
   window.enterApp = function() {
@@ -819,7 +838,6 @@
   };
 
   // --- Maasrot ---
-  let maaserPerson = 0;
 
   function renderMaaser() {
     if (!roomData) return;
@@ -833,10 +851,8 @@
     document.getElementById('maaser-given').textContent = fmt(given);
     document.getElementById('maaser-budget-input').value = maaserBudget || '';
 
-    const tabs = document.getElementById('maaser-person-tabs');
-    tabs.innerHTML = [roomData.name1, roomData.name2].map((name, i) =>
-      `<button class="tab${maaserPerson === i ? ' active' : ''}" data-maaser-person="${i}">${escHtml(name)}</button>`
-    ).join('');
+    const myName = activePerson === 0 ? roomData.name1 : roomData.name2;
+    document.getElementById('maaser-person-name').textContent = myName;
 
     const list = document.getElementById('maaser-list');
     const empty = document.getElementById('maaser-empty');
@@ -863,13 +879,6 @@
       }).join('');
     }
   }
-
-  document.getElementById('maaser-person-tabs').addEventListener('click', (e) => {
-    if (e.target.dataset.maaserPerson !== undefined) {
-      maaserPerson = parseInt(e.target.dataset.maaserPerson);
-      renderMaaser();
-    }
-  });
 
   document.getElementById('maaser-list').addEventListener('click', (e) => {
     const btn = e.target.closest('.mi-del');
@@ -899,7 +908,7 @@
     if (!desc) return alert('נא להוסיף תיאור');
     if (!amount || amount <= 0) return alert('נא להזין סכום תקין');
     await push(ref(db, `rooms/${roomCode}/maaser`), {
-      person: maaserPerson,
+      person: activePerson,
       desc,
       amount,
       ts: Date.now()
@@ -921,16 +930,31 @@
   window.leaveRoom = function() {
     if (!confirm('לעזוב את החדר? אפשר להצטרף חזרה עם אותו קוד.')) return;
     localStorage.removeItem('noa_room_code');
+    localStorage.removeItem('noa_my_person');
     roomCode = null;
+    myPerson = null;
     roomData = null;
     if (unsubscribe) unsubscribe();
     window.closeSettings();
     showScreen('auth-screen');
   };
 
-  if (roomCode) {
+  if (roomCode && myPerson !== null) {
     listenToRoom(roomCode);
     showScreen('main-app');
+  } else if (roomCode && myPerson === null) {
+    const roomRef = ref(db, 'rooms/' + roomCode);
+    onValue(roomRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        localStorage.removeItem('noa_room_code');
+        showScreen('auth-screen');
+        return;
+      }
+      const data = snapshot.val();
+      document.getElementById('pick-p0').textContent = data.name1;
+      document.getElementById('pick-p1').textContent = data.name2;
+      showScreen('pick-screen');
+    }, { onlyOnce: true });
   } else {
     showScreen('auth-screen');
   }
