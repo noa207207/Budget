@@ -560,8 +560,13 @@
       <button class="btn-primary" onclick="saveSettings()">שמור</button>
     </div>
     <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-danger" onclick="resetBudget()" style="font-size:0.8rem;">איפוס הוצאות</button>
+      <button class="btn-danger" onclick="resetMaaser()" style="font-size:0.8rem;">איפוס מעשרות</button>
+      <button class="btn-danger" onclick="resetAll()" style="font-size:0.8rem;">איפוס הכל</button>
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
       <button class="btn-secondary" onclick="refreshApp()">רענן גרסה</button>
-      <button class="btn-danger" onclick="leaveRoom()">עזוב חדר</button>
+      <button class="btn-secondary" onclick="leaveRoom()">עזוב חדר</button>
     </div>
   </div>
 </div>
@@ -913,6 +918,25 @@
     });
     document.getElementById('maaser-desc').value = '';
     document.getElementById('maaser-amount').value = '';
+  };
+
+  window.resetBudget = async function() {
+    if (!confirm('למחוק את כל ההוצאות? הפעולה בלתי הפיכה.')) return;
+    await remove(ref(db, `rooms/${roomCode}/expenses`));
+    window.closeSettings();
+  };
+
+  window.resetMaaser = async function() {
+    if (!confirm('למחוק את כל המעשרות? הפעולה בלתי הפיכה.')) return;
+    await remove(ref(db, `rooms/${roomCode}/maaser`));
+    window.closeSettings();
+  };
+
+  window.resetAll = async function() {
+    if (!confirm('למחוק את כל ההוצאות והמעשרות? הפעולה בלתי הפיכה.')) return;
+    await remove(ref(db, `rooms/${roomCode}/expenses`));
+    await remove(ref(db, `rooms/${roomCode}/maaser`));
+    window.closeSettings();
   };
 
   window.refreshApp = async function() {
