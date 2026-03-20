@@ -692,7 +692,7 @@
     const remaining = roomData.budget - spent;
     const pct = roomData.budget > 0 ? Math.max(0, Math.min(100, (remaining / roomData.budget) * 100)) : 0;
 
-    document.getElementById('header-title').textContent = `${roomData.name1} & ${roomData.name2}`;
+    document.getElementById('header-title').textContent = `${roomData.name1} ו${roomData.name2}`;
     document.getElementById('header-code').textContent = roomCode;
 
     const remEl = document.getElementById('remaining');
