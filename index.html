@@ -462,7 +462,7 @@
 
     <div id="auth-join">
       <input type="text" id="auth-code" placeholder="הכנס קוד חדר" autocomplete="off"
-             maxlength="6" style="text-align:center; font-size:1.3rem; letter-spacing:4px; text-transform:uppercase; direction:ltr;">
+             style="text-align:center; font-size:1.3rem; letter-spacing:4px; text-transform:uppercase; direction:ltr;">
       <button class="btn-primary" onclick="joinRoom()" style="background:#FF6B9D;">הצטרף לתקציב</button>
     </div>
   </div>
@@ -756,7 +756,7 @@
   };
 
   window.joinRoom = async function() {
-    const code = document.getElementById('auth-code').value.trim().toUpperCase();
+    const code = document.getElementById('auth-code').value.replace(/\s+/g, '').toUpperCase();
     if (!code || code.length < 4) return alert('נא להזין קוד חדר תקין');
 
     const roomRef = ref(db, 'rooms/' + code);
