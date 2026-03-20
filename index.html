@@ -797,9 +797,8 @@
   };
 
   window.addExpense = async function() {
-    const desc = document.getElementById('exp-desc').value.trim();
+    const desc = document.getElementById('exp-desc').value.trim() || 'הוצאה';
     const amount = parseFloat(document.getElementById('exp-amount').value);
-    if (!desc) return alert('נא להוסיף תיאור');
     if (!amount || amount <= 0) return alert('נא להזין סכום תקין');
 
     const expRef = ref(db, `rooms/${roomCode}/expenses`);
