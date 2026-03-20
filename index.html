@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Noa Budget">
+  <meta name="apple-mobile-web-app-title" content="תקציב משפחתי">
   <meta name="theme-color" content="#6C63FF">
-  <title>Noa Budget</title>
+  <title>תקציב משפחתי</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -30,12 +30,13 @@
     }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Rubik', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       min-height: 100dvh;
       padding-bottom: env(safe-area-inset-bottom);
+      direction: rtl;
     }
 
     header {
@@ -131,6 +132,7 @@
       outline: none;
       transition: border-color 0.2s;
       background: #FAFAFA;
+      text-align: right;
     }
 
     input:focus, select:focus { border-color: var(--primary); background: white; }
@@ -173,7 +175,7 @@
       font-size: 0.8rem;
       font-weight: 700;
       color: white;
-      margin-right: 12px;
+      margin-left: 12px;
       flex-shrink: 0;
     }
 
@@ -184,13 +186,13 @@
     .expense-info .desc { font-weight: 500; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .expense-info .meta { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
 
-    .expense-amount { font-weight: 700; font-size: 1rem; color: var(--danger); margin-left: 8px; white-space: nowrap; }
+    .expense-amount { font-weight: 700; font-size: 1rem; color: var(--danger); margin-right: 8px; white-space: nowrap; }
 
     .expense-delete {
       background: none;
       border: none;
       padding: 8px;
-      margin-left: 4px;
+      margin-right: 4px;
       cursor: pointer;
       color: #CCC;
       font-size: 1.1rem;
@@ -209,7 +211,6 @@
 
     .empty-state .icon { font-size: 2.5rem; margin-bottom: 8px; }
 
-    /* Join / Create screen */
     .auth-screen {
       display: flex;
       flex-direction: column;
@@ -260,6 +261,7 @@
       letter-spacing: 6px;
       color: var(--primary);
       font-family: monospace;
+      direction: ltr;
     }
 
     .room-code-display .hint {
@@ -296,7 +298,7 @@
     .settings-btn {
       position: absolute;
       top: 20px;
-      right: 16px;
+      left: 16px;
       background: rgba(255,255,255,0.2);
       border: none;
       width: 36px;
@@ -351,7 +353,7 @@
       height: 8px;
       border-radius: 50%;
       background: var(--success);
-      margin-right: 6px;
+      margin-left: 6px;
       animation: pulse 2s infinite;
     }
 
@@ -373,85 +375,85 @@
 </head>
 <body>
 
-<!-- Auth Screen: Create or Join -->
+<!-- מסך כניסה: יצירה או הצטרפות -->
 <div id="auth-screen" class="auth-screen">
   <div class="card">
-    <h2>Noa Budget</h2>
-    <p>Shared budget tracker for couples</p>
+    <h2>תקציב משפחתי</h2>
+    <p>ניהול תקציב משותף לזוגות</p>
 
     <div id="auth-create">
-      <input type="text" id="auth-name1" placeholder="Your name" autocomplete="off">
-      <input type="text" id="auth-name2" placeholder="Partner's name" autocomplete="off">
-      <input type="number" id="auth-budget" placeholder="Monthly budget (₪)" inputmode="decimal" min="0">
-      <button class="btn-primary" onclick="createRoom()">Create Budget</button>
+      <input type="text" id="auth-name1" placeholder="השם שלך" autocomplete="off">
+      <input type="text" id="auth-name2" placeholder="השם של בן/בת הזוג" autocomplete="off">
+      <input type="number" id="auth-budget" placeholder="תקציב חודשי (₪)" inputmode="decimal" min="0">
+      <button class="btn-primary" onclick="createRoom()">צור תקציב</button>
     </div>
 
-    <div class="divider">or join an existing one</div>
+    <div class="divider">או הצטרפו לתקציב קיים</div>
 
     <div id="auth-join">
-      <input type="text" id="auth-code" placeholder="Enter room code" autocomplete="off"
-             maxlength="6" style="text-align:center; font-size:1.3rem; letter-spacing:4px; text-transform:uppercase;">
-      <button class="btn-primary" onclick="joinRoom()" style="background:#FF6B9D;">Join Budget</button>
+      <input type="text" id="auth-code" placeholder="הכנס קוד חדר" autocomplete="off"
+             maxlength="6" style="text-align:center; font-size:1.3rem; letter-spacing:4px; text-transform:uppercase; direction:ltr;">
+      <button class="btn-primary" onclick="joinRoom()" style="background:#FF6B9D;">הצטרף לתקציב</button>
     </div>
   </div>
 </div>
 
-<!-- Room Created: Show Code -->
+<!-- מסך קוד חדר -->
 <div id="code-screen" class="auth-screen" style="display:none;">
   <div class="card">
-    <h2>Budget Created!</h2>
-    <p>Share this code with your partner</p>
+    <h2>התקציב נוצר!</h2>
+    <p>שלחו את הקוד הזה לבן/בת הזוג</p>
     <div class="room-code-display">
       <div class="code" id="show-code"></div>
-      <div class="hint">Your partner enters this code to join</div>
+      <div class="hint">בן/בת הזוג מכניסים את הקוד כדי להצטרף</div>
     </div>
-    <button class="btn-primary" onclick="enterApp()">Continue to App</button>
+    <button class="btn-primary" onclick="enterApp()">המשך לאפליקציה</button>
   </div>
 </div>
 
-<!-- Main App -->
+<!-- אפליקציה ראשית -->
 <div id="main-app" style="display:none;">
   <header>
-    <h1 id="header-title">Our Budget</h1>
-    <p class="sync-badge"><span class="status-dot"></span>Synced in real-time · Room: <span id="header-code"></span></p>
-    <button class="settings-btn" onclick="openSettings()" aria-label="Settings">⚙</button>
+    <h1 id="header-title">התקציב שלנו</h1>
+    <p class="sync-badge">מסונכרן בזמן אמת<span class="status-dot"></span> חדר: <span id="header-code" style="direction:ltr; display:inline-block;"></span></p>
+    <button class="settings-btn" onclick="openSettings()" aria-label="הגדרות">⚙</button>
   </header>
 
   <div class="budget-card">
-    <div class="label">Remaining</div>
+    <div class="label">נשאר</div>
     <div class="amount" id="remaining">₪0</div>
     <div class="progress-bar"><div class="fill" id="progress-fill" style="width:100%"></div></div>
     <div class="budget-row">
       <div class="col">
-        <div class="label">Budget</div>
+        <div class="label">תקציב</div>
         <div class="val green" id="total-budget">₪0</div>
       </div>
       <div class="col">
-        <div class="label">Spent</div>
+        <div class="label">הוצאות</div>
         <div class="val red" id="total-spent">₪0</div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">Add Expense</div>
+    <div class="section-title">הוסף הוצאה</div>
     <div class="card">
       <div class="tab-bar" id="person-tabs"></div>
-      <input type="text" id="exp-desc" placeholder="What did you spend on?" autocomplete="off">
+      <input type="text" id="exp-desc" placeholder="על מה הוצאת?" autocomplete="off">
       <div class="form-row" style="margin-top:10px;">
-        <input type="number" id="exp-amount" placeholder="Amount" inputmode="decimal" min="0" step="0.01">
-        <button class="btn-set" onclick="addExpense()">Add</button>
+        <input type="number" id="exp-amount" placeholder="סכום" inputmode="decimal" min="0" step="0.01">
+        <button class="btn-set" onclick="addExpense()">הוסף</button>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-title">Recent Expenses</div>
+    <div class="section-title">הוצאות אחרונות</div>
     <div class="card" id="expenses-card">
       <ul class="expense-list" id="expense-list"></ul>
       <div class="empty-state" id="empty-state">
         <div class="icon">📋</div>
-        <div>No expenses yet.<br>Start tracking your spending!</div>
+        <div>אין הוצאות עדיין.<br>התחילו לעקוב אחרי ההוצאות!</div>
       </div>
     </div>
   </div>
@@ -459,23 +461,23 @@
   <div style="height:40px"></div>
 </div>
 
-<!-- Settings Modal -->
+<!-- חלון הגדרות -->
 <div class="modal-overlay" id="settings-modal">
   <div class="modal">
-    <h3>Settings</h3>
-    <input type="text" id="edit-name1" placeholder="Your name">
-    <input type="text" id="edit-name2" placeholder="Partner's name">
-    <input type="number" id="edit-budget" placeholder="Budget amount" inputmode="decimal" min="0">
+    <h3>הגדרות</h3>
+    <input type="text" id="edit-name1" placeholder="השם שלך">
+    <input type="text" id="edit-name2" placeholder="השם של בן/בת הזוג">
+    <input type="number" id="edit-budget" placeholder="סכום תקציב" inputmode="decimal" min="0">
     <div class="room-code-display" style="margin:12px 0 0;">
-      <div class="hint">Room Code</div>
+      <div class="hint">קוד חדר</div>
       <div class="code" id="settings-code" style="font-size:1.4rem;"></div>
     </div>
     <div class="btn-row" style="margin-top:16px;">
-      <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
-      <button class="btn-primary" onclick="saveSettings()">Save</button>
+      <button class="btn-secondary" onclick="closeSettings()">ביטול</button>
+      <button class="btn-primary" onclick="saveSettings()">שמור</button>
     </div>
     <div class="btn-row" style="margin-top:8px;">
-      <button class="btn-danger" onclick="leaveRoom()">Leave Room</button>
+      <button class="btn-danger" onclick="leaveRoom()">עזוב חדר</button>
     </div>
   </div>
 </div>
@@ -537,7 +539,7 @@
     unsubscribe = onValue(roomRef, (snapshot) => {
       roomData = snapshot.val();
       if (!roomData) {
-        alert('Room not found or deleted.');
+        alert('החדר לא נמצא או נמחק.');
         localStorage.removeItem('noa_room_code');
         roomCode = null;
         showScreen('auth-screen');
@@ -586,21 +588,19 @@
       list.innerHTML = sorted.map(e => {
         const personName = e.person === 0 ? roomData.name1 : roomData.name2;
         const avatarClass = e.person === 0 ? 'person1' : 'person2';
-        const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const date = new Date(e.ts).toLocaleDateString('he-IL', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         return `<li class="expense-item">
           <div class="expense-avatar ${avatarClass}">${initials(personName)}</div>
           <div class="expense-info">
             <div class="desc">${escHtml(e.desc)}</div>
             <div class="meta">${escHtml(personName)} · ${date}</div>
           </div>
-          <div class="expense-amount">-${fmt(e.amount)}</div>
-          <button class="expense-delete" data-id="${e.id}" aria-label="Delete">×</button>
+          <div class="expense-amount">${fmt(e.amount)}-</div>
+          <button class="expense-delete" data-id="${e.id}" aria-label="מחק">×</button>
         </li>`;
       }).join('');
     }
   }
-
-  // --- Event handlers (attached via delegation) ---
 
   document.getElementById('person-tabs').addEventListener('click', (e) => {
     if (e.target.dataset.person !== undefined) {
@@ -611,19 +611,17 @@
 
   document.getElementById('expense-list').addEventListener('click', (e) => {
     const btn = e.target.closest('.expense-delete');
-    if (btn && confirm('Delete this expense?')) {
+    if (btn && confirm('למחוק את ההוצאה הזו?')) {
       remove(ref(db, `rooms/${roomCode}/expenses/${btn.dataset.id}`));
     }
   });
-
-  // --- Global functions ---
 
   window.createRoom = async function() {
     const n1 = document.getElementById('auth-name1').value.trim();
     const n2 = document.getElementById('auth-name2').value.trim();
     const b = parseFloat(document.getElementById('auth-budget').value);
-    if (!n1 || !n2) return alert('Please enter both names');
-    if (!b || b <= 0) return alert('Please enter a valid budget');
+    if (!n1 || !n2) return alert('נא להזין את שני השמות');
+    if (!b || b <= 0) return alert('נא להזין תקציב תקין');
 
     const code = generateCode();
     await set(ref(db, 'rooms/' + code), {
@@ -641,12 +639,12 @@
 
   window.joinRoom = async function() {
     const code = document.getElementById('auth-code').value.trim().toUpperCase();
-    if (!code || code.length < 4) return alert('Please enter a valid room code');
+    if (!code || code.length < 4) return alert('נא להזין קוד חדר תקין');
 
     const roomRef = ref(db, 'rooms/' + code);
     onValue(roomRef, (snapshot) => {
       if (!snapshot.exists()) {
-        alert('Room not found. Check the code and try again.');
+        alert('החדר לא נמצא. בדקו את הקוד ונסו שוב.');
         return;
       }
       roomCode = code;
@@ -664,8 +662,8 @@
   window.addExpense = async function() {
     const desc = document.getElementById('exp-desc').value.trim();
     const amount = parseFloat(document.getElementById('exp-amount').value);
-    if (!desc) return alert('Please add a description');
-    if (!amount || amount <= 0) return alert('Please enter a valid amount');
+    if (!desc) return alert('נא להוסיף תיאור');
+    if (!amount || amount <= 0) return alert('נא להזין סכום תקין');
 
     const expRef = ref(db, `rooms/${roomCode}/expenses`);
     await push(expRef, {
@@ -695,15 +693,15 @@
     const n1 = document.getElementById('edit-name1').value.trim();
     const n2 = document.getElementById('edit-name2').value.trim();
     const b = parseFloat(document.getElementById('edit-budget').value);
-    if (!n1 || !n2) return alert('Please enter both names');
-    if (!b || b <= 0) return alert('Please enter a valid budget');
+    if (!n1 || !n2) return alert('נא להזין את שני השמות');
+    if (!b || b <= 0) return alert('נא להזין תקציב תקין');
 
     await update(ref(db, 'rooms/' + roomCode), { name1: n1, name2: n2, budget: b });
     window.closeSettings();
   };
 
   window.leaveRoom = function() {
-    if (!confirm('Leave this room? You can rejoin with the same code.')) return;
+    if (!confirm('לעזוב את החדר? אפשר להצטרף חזרה עם אותו קוד.')) return;
     localStorage.removeItem('noa_room_code');
     roomCode = null;
     roomData = null;
@@ -712,7 +710,6 @@
     showScreen('auth-screen');
   };
 
-  // --- Init ---
   if (roomCode) {
     listenToRoom(roomCode);
     showScreen('main-app');
