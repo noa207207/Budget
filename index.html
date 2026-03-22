@@ -639,6 +639,21 @@
   let activePerson = myPerson !== null ? parseInt(myPerson) : 0;
   let roomData = null;
   let unsubscribe = null;
+  let knownExpenseIds = new Set();
+  let knownMaaserIds = new Set();
+  let firstLoad = true;
+
+  function requestNotifications() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+
+  function sendNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body, icon: 'icons/icon-192.png' });
+    }
+  }
 
   function generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -669,6 +684,7 @@
 
   function listenToRoom(code) {
     if (unsubscribe) unsubscribe();
+    firstLoad = true;
     const roomRef = ref(db, 'rooms/' + code);
     unsubscribe = onValue(roomRef, (snapshot) => {
       roomData = snapshot.val();
@@ -679,6 +695,31 @@
         showScreen('auth-screen');
         return;
       }
+
+      const expenses = roomData.expenses ? Object.entries(roomData.expenses) : [];
+      const maaserEntries = roomData.maaser ? Object.entries(roomData.maaser) : [];
+
+      if (firstLoad) {
+        knownExpenseIds = new Set(expenses.map(([k]) => k));
+        knownMaaserIds = new Set(maaserEntries.map(([k]) => k));
+        firstLoad = false;
+      } else {
+        for (const [id, e] of expenses) {
+          if (!knownExpenseIds.has(id) && e.person !== activePerson) {
+            const name = e.person === 0 ? roomData.name1 : roomData.name2;
+            sendNotification('הוצאה חדשה', `${name} הוציא/ה ${fmt(e.amount)} על ${e.desc}`);
+          }
+          knownExpenseIds.add(id);
+        }
+        for (const [id, e] of maaserEntries) {
+          if (!knownMaaserIds.has(id) && e.person !== activePerson) {
+            const name = e.person === 0 ? roomData.name1 : roomData.name2;
+            sendNotification('מעשרות', `${name} תרם/ה ${fmt(e.amount)} - ${e.desc}`);
+          }
+          knownMaaserIds.add(id);
+        }
+      }
+
       renderApp();
       if (document.getElementById('maaser-modal').classList.contains('visible')) renderMaaser();
     });
@@ -789,11 +830,13 @@
     activePerson = p;
     myPerson = p;
     localStorage.setItem('noa_my_person', String(p));
+    requestNotifications();
     listenToRoom(roomCode);
     showScreen('main-app');
   };
 
   window.enterApp = function() {
+    requestNotifications();
     listenToRoom(roomCode);
     showScreen('main-app');
   };
@@ -952,6 +995,7 @@
   };
 
   if (roomCode && myPerson !== null) {
+    requestNotifications();
     listenToRoom(roomCode);
     showScreen('main-app');
   } else if (roomCode && myPerson === null) {
