@@ -500,6 +500,11 @@
     <button class="settings-btn" onclick="openSettings()" aria-label="הגדרות">⚙</button>
   </header>
 
+  <div id="notif-banner" onclick="enableNotifications()" style="display:none; background:#FFF3CD; color:#856404; text-align:center; padding:10px 16px; font-size:0.85rem; font-weight:500; cursor:pointer;">
+    🔔 לחצו כאן כדי לקבל התראות כשבן/בת הזוג מוסיפים הוצאה
+    <span style="font-size:0.75rem; display:block; opacity:0.7; margin-top:2px;">ניתן לסגור ✕</span>
+  </div>
+
   <div class="budget-card">
     <div class="label">נשאר</div>
     <div class="amount" id="remaining">₪0</div>
@@ -643,11 +648,25 @@
   let knownMaaserIds = new Set();
   let firstLoad = true;
 
-  function requestNotifications() {
+  function showNotifBanner() {
+    const banner = document.getElementById('notif-banner');
+    if (!banner) return;
     if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
     }
   }
+
+  window.enableNotifications = async function() {
+    if ('Notification' in window) {
+      const result = await Notification.requestPermission();
+      document.getElementById('notif-banner').style.display = 'none';
+      if (result === 'granted') {
+        new Notification('התראות הופעלו!', { body: 'תקבלו התראה כשבן/בת הזוג מוסיפים הוצאה', icon: 'icons/icon-192.png' });
+      }
+    }
+  };
 
   function sendNotification(title, body) {
     if ('Notification' in window && Notification.permission === 'granted') {
@@ -830,13 +849,13 @@
     activePerson = p;
     myPerson = p;
     localStorage.setItem('noa_my_person', String(p));
-    requestNotifications();
+    showNotifBanner();
     listenToRoom(roomCode);
     showScreen('main-app');
   };
 
   window.enterApp = function() {
-    requestNotifications();
+    showNotifBanner();
     listenToRoom(roomCode);
     showScreen('main-app');
   };
@@ -995,7 +1014,7 @@
   };
 
   if (roomCode && myPerson !== null) {
-    requestNotifications();
+    showNotifBanner();
     listenToRoom(roomCode);
     showScreen('main-app');
   } else if (roomCode && myPerson === null) {
