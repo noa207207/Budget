@@ -438,6 +438,81 @@
     }
     .maaser-item .mi-del:hover { color: var(--danger); }
 
+    .fixed-section .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .fixed-section .section-header .toggle-icon {
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-light);
+    }
+
+    .fixed-section .section-header .toggle-icon.open { transform: rotate(90deg); }
+
+    .fixed-total-badge {
+      background: #EEF2FF;
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-right: 8px;
+    }
+
+    .fixed-body { overflow: hidden; transition: max-height 0.3s ease; }
+
+    .fixed-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #F0F2F5;
+    }
+
+    .fixed-item:last-child { border-bottom: none; }
+
+    .fixed-item .fixed-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #EEF2FF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    .fixed-item .fixed-info { flex: 1; min-width: 0; }
+    .fixed-item .fixed-info .desc { font-weight: 500; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .fixed-item .fixed-amt { font-weight: 700; font-size: 0.95rem; color: var(--primary); margin-right: 8px; white-space: nowrap; }
+
+    .fixed-item .fixed-del {
+      background: none;
+      border: none;
+      padding: 6px;
+      cursor: pointer;
+      color: #CCC;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-right: 2px;
+      transition: color 0.2s;
+    }
+
+    .fixed-item .fixed-del:hover { color: var(--danger); }
+
+    .fixed-add-form {
+      border-top: 1px solid #F0F2F5;
+      padding-top: 12px;
+      margin-top: 8px;
+    }
+
     @media (max-width: 380px) {
       .budget-card .amount { font-size: 1.8rem; }
     }
@@ -515,8 +590,32 @@
         <div class="val green" id="total-budget">₪0</div>
       </div>
       <div class="col">
+        <div class="label">קבועות</div>
+        <div class="val red" id="total-fixed">₪0</div>
+      </div>
+      <div class="col">
         <div class="label">הוצאות</div>
         <div class="val red" id="total-spent">₪0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section fixed-section">
+    <div class="section-title section-header" onclick="toggleFixed()">
+      <span>הוצאות קבועות <span class="fixed-total-badge" id="fixed-total-badge">₪0</span></span>
+      <span class="toggle-icon" id="fixed-toggle">◀</span>
+    </div>
+    <div class="card" id="fixed-card" style="display:none;">
+      <ul id="fixed-list" style="list-style:none;"></ul>
+      <div class="empty-state" id="fixed-empty" style="padding:16px;">
+        <div>אין הוצאות קבועות עדיין</div>
+      </div>
+      <div class="fixed-add-form">
+        <input type="text" id="fixed-desc" placeholder="תיאור (שכירות, ביטוח, חשמל...)" autocomplete="off">
+        <div class="form-row" style="margin-top:8px;">
+          <input type="number" id="fixed-amount" placeholder="סכום חודשי" inputmode="decimal" min="0" step="0.01">
+          <button class="btn-set" onclick="addFixed()">הוסף</button>
+        </div>
       </div>
     </div>
   </div>
@@ -748,8 +847,10 @@
     if (!roomData) return;
 
     const expenses = roomData.expenses ? Object.entries(roomData.expenses).map(([k, v]) => ({ id: k, ...v })) : [];
+    const fixedExpenses = roomData.fixedExpenses ? Object.entries(roomData.fixedExpenses).map(([k, v]) => ({ id: k, ...v })) : [];
     const spent = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const remaining = roomData.budget - spent;
+    const fixedTotal = fixedExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const remaining = roomData.budget - fixedTotal - spent;
     const pct = roomData.budget > 0 ? Math.max(0, Math.min(100, (remaining / roomData.budget) * 100)) : 0;
 
     document.getElementById('header-title').textContent = `${roomData.name1} ו${roomData.name2}`;
@@ -760,11 +861,14 @@
     remEl.className = 'amount ' + (remaining > 0 ? 'positive' : remaining < 0 ? 'negative' : 'zero');
 
     document.getElementById('total-budget').textContent = fmt(roomData.budget);
+    document.getElementById('total-fixed').textContent = fmt(fixedTotal);
     document.getElementById('total-spent').textContent = fmt(spent);
 
     const fill = document.getElementById('progress-fill');
     fill.style.width = pct + '%';
     fill.className = 'fill' + (pct < 20 ? ' danger' : pct < 50 ? ' warning' : '');
+
+    renderFixed(fixedExpenses);
 
     const myName = activePerson === 0 ? roomData.name1 : roomData.name2;
     document.getElementById('my-person-name').textContent = myName;
@@ -898,6 +1002,54 @@
 
     await update(ref(db, 'rooms/' + roomCode), { name1: n1, name2: n2, budget: b });
     window.closeSettings();
+  };
+
+  // --- Fixed Expenses ---
+
+  function renderFixed(fixedExpenses) {
+    const list = document.getElementById('fixed-list');
+    const empty = document.getElementById('fixed-empty');
+    const badge = document.getElementById('fixed-total-badge');
+    const total = fixedExpenses.reduce((sum, e) => sum + e.amount, 0);
+    badge.textContent = fmt(total);
+
+    if (fixedExpenses.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      list.innerHTML = fixedExpenses.map(e => `<li class="fixed-item">
+        <div class="fixed-icon">📌</div>
+        <div class="fixed-info"><div class="desc">${escHtml(e.desc)}</div></div>
+        <div class="fixed-amt">${fmt(e.amount)}</div>
+        <button class="fixed-del" data-fixed-id="${e.id}">×</button>
+      </li>`).join('');
+    }
+  }
+
+  document.getElementById('fixed-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('.fixed-del');
+    if (btn && confirm('למחוק הוצאה קבועה זו?')) {
+      remove(ref(db, `rooms/${roomCode}/fixedExpenses/${btn.dataset.fixedId}`));
+    }
+  });
+
+  let fixedOpen = false;
+  window.toggleFixed = function() {
+    fixedOpen = !fixedOpen;
+    document.getElementById('fixed-card').style.display = fixedOpen ? 'block' : 'none';
+    const icon = document.getElementById('fixed-toggle');
+    icon.classList.toggle('open', fixedOpen);
+  };
+
+  window.addFixed = async function() {
+    const desc = document.getElementById('fixed-desc').value.trim();
+    const amount = parseFloat(document.getElementById('fixed-amount').value);
+    if (!desc) return alert('נא להזין תיאור');
+    if (!amount || amount <= 0) return alert('נא להזין סכום תקין');
+    await push(ref(db, `rooms/${roomCode}/fixedExpenses`), { desc, amount });
+    document.getElementById('fixed-desc').value = '';
+    document.getElementById('fixed-amount').value = '';
   };
 
   // --- Maasrot ---
